@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react';
+import { useLocation } from "react-router-dom";
 // reactstrap components
 import { Container, Row } from "reactstrap";
 // Import Swiper React components
@@ -13,6 +15,33 @@ import 'assets/css/style.css';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 
 const Header = () => {
+  const location = useLocation();
+  const [bannerImages, setBannerImages] = useState([]);
+  const [activeClass, setActiveClass] = useState('');
+
+  useEffect(() => {
+    if (location.pathname === '/admin/cate1') {
+      setBannerImages([
+        { img: "cate1.jpeg" },
+        { img: "cate2.jpeg" },
+        { img: "cate3.jpeg" },
+        { img: "cate4.jpeg" },
+        { img: "cate5.jpeg" },
+        { img: "cate6.jpeg" },
+      ]);
+      setActiveClass('active');
+    } else {
+      setBannerImages([
+        {img: "1.jpg"},
+        {img: "2.jpg"},
+        {img: "3.jpg"},
+        {img: "4.jpg"},
+        {img: "5.jpg"},
+        {img: "6.jpg"}
+      ]);
+      setActiveClass('');
+    }
+  }, [location.pathname]);
 
   return (
     <>
@@ -36,44 +65,14 @@ const Header = () => {
                 modules={[Autoplay, Pagination, Navigation]}
                 className="mySwiper2"
               >
-                <SwiperSlide>
-                  <img
-                    alt="..."
-                    src={
-                      require("../../assets/img/banner/1.jpg")
-                    }
-                  />
+                {bannerImages.map((image, index) => (
+                  <SwiperSlide key={index}>
+                    <img
+                      alt="..."
+                      src={require(`../../assets/img/banner/${image.img}`)}
+                    />
                   </SwiperSlide>
-                <SwiperSlide><img
-                    alt="..."
-                    src={
-                      require("../../assets/img/banner/2.jpg")
-                    }
-                  /></SwiperSlide>
-                <SwiperSlide><img
-                    alt="..."
-                    src={
-                      require("../../assets/img/banner/3.jpg")
-                    }
-                  /></SwiperSlide>
-                <SwiperSlide><img
-                    alt="..."
-                    src={
-                      require("../../assets/img/banner/4.jpg")
-                    }
-                  /></SwiperSlide>
-                <SwiperSlide><img
-                    alt="..."
-                    src={
-                      require("../../assets/img/banner/5.jpg")
-                    }
-                  /></SwiperSlide>
-                <SwiperSlide><img
-                    alt="..."
-                    src={
-                      require("../../assets/img/banner/6.jpg")
-                    }
-                  /></SwiperSlide>
+                ))}
               </Swiper>
             </Row>
           </div>
