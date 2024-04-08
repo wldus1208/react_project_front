@@ -8,6 +8,7 @@ import Tables from "views/examples/Tables.js";
 import Icons from "views/examples/Icons.js";
 import Cate1 from "views/pages/Category.js";
 import CateDetail from "views/pages/CateDetail.js";
+import Cart from "views/pages/Cart.js";
 
 var routes = [
   {
@@ -71,6 +72,13 @@ var routes = [
     name: "CateDetail",
     icon: "ni ni-planet text-blue",
     component: <CateDetail />,
+    layout: "/admin",
+  },
+  {
+    path: "/cart",
+    name: "Cart",
+    icon: "ni ni-planet text-blue",
+    component: <Cart />,
     layout: "/admin",
   },
 ];

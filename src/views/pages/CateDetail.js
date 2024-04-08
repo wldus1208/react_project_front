@@ -4,11 +4,23 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 const CateDetail = () => {
     const navigate = useNavigate();
+    const [showModal, setShowModal] = useState(false);
 
     const ImageStyle = () => ({
-        width: '510px', 
+        width: '530px', 
         height: '710px', 
-      });
+    });
+
+    const ImageStyle2 = () => ({
+        width: '78px', 
+        height: '100px', 
+    });
+
+    const [isVisible, setIsVisible] = useState(false);
+
+    const toggleVisibility = () => {
+        setIsVisible(!isVisible);
+    };
 
     const loginId = sessionStorage.getItem('loginId');
     const { detailId } = useParams();
@@ -23,13 +35,13 @@ const CateDetail = () => {
     const [quantity, setQuantity] = useState(1);
 
     useEffect(() => {
-        console.log("detailId", detailId);
+        // console.log("detailId", detailId);
         let params = new URLSearchParams()
         params.append('detailId', detailId)
 
         axios.post("/product/detail/", params)
           .then(res => {
-            console.log(res);
+            // console.log(res);
             setBrand(res.data.result.brand);
             setImg(res.data.result.img);
             setDetailName(res.data.result.detailName)
@@ -46,16 +58,21 @@ const CateDetail = () => {
 
     const calculateDiscountedPrice = (price, discountPer) => {
         const discountedPrice = price - (price * (discountPer / 100));
-        return discountedPrice.toFixed(0);
+        return parseInt(discountedPrice.toFixed(0));
     };
   
     const numberCommas = (number) => {
         return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     };
 
+    const discountedPrice = calculateDiscountedPrice(price, discountPer).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    const discountedPrice2 = calculateDiscountedPrice(price, discountPer);
+
+    const totalPrice = (discountedPrice2 * quantity).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
     const toggleLike = () => {
         setIsLiked(!isLiked);
-        console.log("isLiked", isLiked);
+        // console.log("isLiked", isLiked);
         // axios.post('/like', { liked: !isLiked })
         // .then(response => {
         //     console.log(response.data); 
@@ -105,6 +122,23 @@ const CateDetail = () => {
     const cart = () => {
         if(!loginId) {
             navigate("/auth/login")
+        } else {
+            let params = new URLSearchParams()
+            params.append('loginId', loginId)
+            params.append('detailId', detailId)
+            params.append('amount', quantity)
+            params.append('action', "I")
+
+            axios.post("/cart/save/", params)
+            .then(res => {
+                // console.log(res);
+                if(res.data.resultMsg === "SUCCESS") {
+                    setShowModal(true);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching store name:', error);
+            });
         }
     };
 
@@ -114,6 +148,14 @@ const CateDetail = () => {
             navigate("/auth/login")
         }
     };
+
+    const close = () => {
+        setShowModal(false);
+    }
+
+    const cartGo = () => {
+        navigate("/admin/cart")
+    }
     
     return (
         <div className="container marketing">
@@ -146,10 +188,10 @@ const CateDetail = () => {
                     <h2 className="featurette-heading fw-normal lh-1">
                         <span style={{ color:"red",marginRight: "10px" }}>{discountPer}%</span>
                         <span style={{ textDecoration: "line-through", color: "gray", marginRight: "10px" }}>{numberCommas(price)}</span>
-                        <span style={{ fontWeight: "bold", marginRight: "10px" }}>{calculateDiscountedPrice(price, discountPer).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</span>
+                        <span style={{ fontWeight: "bold", marginRight: "10px" }}>{discountedPrice}</span>
                     </h2>
                     <p className="lead">
-                        <spnn><i className="ni ni-air-baloon" /> 최대 {rewardPoints}M 적립예정적립예정</spnn>
+                        <span><i className="ni ni-air-baloon" /> 최대 {rewardPoints}M 적립예정적립예정</span>
                         <hr />
                         <span><i className="ni ni-spaceship" /> 지금 결제 시 오늘 출발<br />무료배송 / CJ 대한통운<br /><span style={{color:"red"}}>04/06(토)</span>이내 도착확률 98%<br />전국 평균 기준</span>
                         <hr />
@@ -159,19 +201,76 @@ const CateDetail = () => {
                     <hr />
                     <div>
                         <p>수량</p>
-                        <div>
-                            <button onClick={decreaseQuantity}>-</button>
-                            <span>{quantity}</span>
-                            <button onClick={increaseQuantity}>+</button>
+                        <div className="btn-group btn-group-sm" role="group" aria-label="Small button group">
+                            <button type="button" className="btn btn-outline-primary" onClick={decreaseQuantity}><i className='ni ni-fat-delete'></i></button>
+                            <span className="btn btn-outline-primary disabled" style={{width:"60px"}}>{quantity}</span>
+                            <button type="button" className="btn btn-outline-primary" onClick={increaseQuantity}><i className='ni ni-fat-add'></i></button>
+                        </div>
+                        <button type="button" className="btn btn-outline-primary btn-sm" style={{marginLeft: "15px"}} onClick={toggleVisibility}>선택</button>
+                    </div>
+                    {isVisible && (
+                    <div>
+                        <div className='d-flex mt-4 px-3 py-3 bg-light'>
+                            {img && (
+                                <div>
+                                    <img
+                                        alt="..."
+                                        src={require(`../../assets/img/product/${img}`)}
+                                        style={ImageStyle2()}
+                                    />
+                                </div>
+                            )}
+                            <div>
+                                <div style={{width:"430px", textAlign:"right", fontSize:"15px"}}>
+                                    <i className='ni ni-fat-remove' onClick={toggleVisibility}></i>
+                                </div>
+                                <p className="fw-normal lh-1 px-3">{detailName}</p>
+                                <div className="d-flex flex-column px-3" style={{width:"35%"}}>
+                                    <div className="btn-group btn-group-sm" role="group" aria-label="Small button group">
+                                        <button type="button" className="btn btn-outline-primary" onClick={decreaseQuantity}><i className='ni ni-fat-delete'></i></button>
+                                        <span className="btn btn-outline-primary disabled" style={{width:"60px"}}>{quantity}</span>
+                                        <button type="button" className="btn btn-outline-primary" onClick={increaseQuantity}><i className='ni ni-fat-add'></i></button>
+                                    </div>
+                                </div>
+                                <div style={{fontSize:"15px", fontWeight:"bold", textAlign: "right"}}>
+                                    <span>{totalPrice}원</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className='py-4' style={{textAlign:"right" }}>
+                            <span className='py-2' style={{ marginRight: "10px" }}>
+                                <span style={{fontSize:"20px"}}>총 상품금액</span>
+                                <span style={{fontSize:"25px", color:"red", fontWeight:"bold"}} className='px-2'>{totalPrice}원</span>
+                            </span>
                         </div>
                     </div>
-                    <div>
-                        <button onClick={cart}>장바구니</button>
-                        <button onClick={buy}>바로구매</button>
+                    )}
+                    <div className='mt-3'>
+                        <button type="button" style={{width:"250px"}} className="btn btn-outline-danger btn-lg" onClick={cart}>쇼핑백</button>
+                        <button type="button" style={{width:"250px"}} className="btn btn-danger btn-lg" onClick={buy}>바로구매</button>
                     </div>
                 </div>
             </div>
-
+            {showModal && (
+            <div className={`modal fade ${showModal ? 'show' : ''}`} style={{ display: showModal ? 'block' : 'none'}} tabIndex="-1">
+                <div className="modal-dialog modal-dialog-centered">
+                    <div className="modal-content rounded-4 shadow " style={{width:"380px", height:"250px", backgroundColor:"#e0e0e0"}}>
+                        <div className="modal-header border-bottom-0">
+                            <h1 className="modal-title fs-5">쇼핑백</h1>
+                            <button type="button" className="ni ni-fat-remove" onClick={close}></button>
+                        </div>
+                        <div className="modal-body py-0" style={{textAlign:"center"}}>
+                            <p>상품을 쇼핑백에 담았습니다.</p>
+                            <p style={{fontWeight:"bold"}}>쇼핑백으로 가시겠습니까?</p>
+                        </div>
+                        <div className="modal-footer d-flex justify-content-center border-top-0">
+                            <button type="button" className="btn btn-lg btn-secondary" style={{width:"120px"}} onClick={cartGo}>쇼핑백 가기</button>
+                            <button type="button" className="btn btn-lg btn-dark" style={{width:"120px"}} onClick={close}>쇼핑 계속하기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            )}
             <hr className="featurette-divider" />
 
             <div className="row g-3">
