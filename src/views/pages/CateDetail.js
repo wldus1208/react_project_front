@@ -1,10 +1,12 @@
 import React, { useState, useEffect  } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
+import { calculateDiscountedPrice, numberCommas } from 'components/commonUtils';
 
 const CateDetail = () => {
     const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
+    const [dynamicText, setDynamicText] = useState("");
 
     const ImageStyle = () => ({
         width: '530px', 
@@ -17,9 +19,11 @@ const CateDetail = () => {
     });
 
     const [isVisible, setIsVisible] = useState(false);
+    const [isSelected, setIsSelected] = useState(false);
 
     const toggleVisibility = () => {
         setIsVisible(!isVisible);
+        setIsSelected(!isSelected);
     };
 
     const loginId = sessionStorage.getItem('loginId');
@@ -55,15 +59,6 @@ const CateDetail = () => {
               console.error('Error fetching store name:', error);
           });
     });
-
-    const calculateDiscountedPrice = (price, discountPer) => {
-        const discountedPrice = price - (price * (discountPer / 100));
-        return parseInt(discountedPrice.toFixed(0));
-    };
-  
-    const numberCommas = (number) => {
-        return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    };
 
     const discountedPrice = calculateDiscountedPrice(price, discountPer).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     const discountedPrice2 = calculateDiscountedPrice(price, discountPer);
@@ -122,23 +117,28 @@ const CateDetail = () => {
     const cart = () => {
         if(!loginId) {
             navigate("/auth/login")
-        } else {
+        } else if(isSelected) {
             let params = new URLSearchParams()
             params.append('loginId', loginId)
             params.append('detailId', detailId)
             params.append('amount', quantity)
-            params.append('action', "I")
 
-            axios.post("/cart/save/", params)
+            axios.post("/cart/insert/", params)
             .then(res => {
-                // console.log(res);
+                console.log(res);
                 if(res.data.resultMsg === "SUCCESS") {
+                    setDynamicText("상품을 쇼핑백에 담았습니다.");
+                    setShowModal(true);
+                } else if(res.data.resultMsg === "DUP") {
+                    setDynamicText("쇼핑백에 이미 해당 제품이 있습니다.");
                     setShowModal(true);
                 }
             })
             .catch(error => {
                 console.error('Error fetching store name:', error);
             });
+        } else {
+            alert("수량을 선택하세요.");
         }
     };
 
@@ -195,8 +195,9 @@ const CateDetail = () => {
                         <hr />
                         <span><i className="ni ni-spaceship" /> 지금 결제 시 오늘 출발<br />무료배송 / CJ 대한통운<br /><span style={{color:"red"}}>04/06(토)</span>이내 도착확률 98%<br />전국 평균 기준</span>
                         <hr />
-                        <spnn><i className="ni ni-credit-card" /> LFmall 신용카드 결제시 5% 추가할인</spnn> <br/>
-                        <spnn><i className="ni ni-credit-card" /> LFPay KB국민카드 최대 9,000원 즉시할인                                                                                                                                                                                                         / 카드별 무이자</spnn>
+                        <span><i className="ni ni-credit-card" /> LFmall 신용카드 결제시 5% 추가할인</span> <br/>
+                        <span><i className="ni ni-credit-card" /> LFPay KB국민카드 최대 9,000원 즉시할인</span> 
+                        {/* <spnn><i className="ni ni-credit-card" /> LFPay KB국민카드 최대 9,000원 즉시할인                                                                                                                                                                                                         / 카드별 무이자</spnn> */}
                     </p>
                     <hr />
                     <div>
@@ -260,7 +261,7 @@ const CateDetail = () => {
                             <button type="button" className="ni ni-fat-remove" onClick={close}></button>
                         </div>
                         <div className="modal-body py-0" style={{textAlign:"center"}}>
-                            <p>상품을 쇼핑백에 담았습니다.</p>
+                            <p>{dynamicText}</p>
                             <p style={{fontWeight:"bold"}}>쇼핑백으로 가시겠습니까?</p>
                         </div>
                         <div className="modal-footer d-flex justify-content-center border-top-0">
@@ -288,7 +289,7 @@ const CateDetail = () => {
                 </div>
                 <div className="col-md-2 d-flex align-items-end">
                     <button type="button" className="btn" onClick={handleSubmit}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" className="bi bi-pencil" viewBox="0 0 16 16">
                         <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
                         </svg>
                     </button>
