@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import 'assets/css/AdminNavbar.css';
+import RecentlyViewed from './RecentlyViewed.js'
 
 // reactstrap components
 import {
@@ -42,11 +43,12 @@ const AdminNavbar = (props) => {
           <Link
             className="h1 mb-0 text-black text-uppercase d-none d-lg-inline-block"
             to="/"
+            style={{fontSize:"35px"}}
           >
             LF Mall
           </Link>
           <Link 
-            className={`h4 mb-0 text-black d-none d-lg-inline-block ml-6 header-link ${location.pathname === '/admin/cate1' ? 'active' : ''}`}
+            className={`h4 mb-0 text-black d-none d-lg-inline-block ml-4 header-link ${location.pathname === '/admin/cate1' ? 'active' : ''}`}
             to="/admin/cate1"
           >
             잡화/슈즈
@@ -69,6 +71,7 @@ const AdminNavbar = (props) => {
               </InputGroup>
             </FormGroup>
           </Form>
+          
           <Nav className="align-items-center d-none d-md-flex" navbar>
           {loginId ? (
               // 로그인 되어 있을 때 
@@ -89,6 +92,10 @@ const AdminNavbar = (props) => {
                 </Media>
               </DropdownToggle>
               <DropdownMenu className="dropdown-menu-arrow" right>
+                <DropdownItem to="/admin/cart" tag={Link}>
+                  <i className="ni ni-bag-17" />
+                  <span>쇼핑백</span>
+                </DropdownItem>
                 <DropdownItem to="/admin/user-profile" tag={Link}>
                   <i className="ni ni-single-02" />
                   <span>My profile</span>
@@ -96,10 +103,6 @@ const AdminNavbar = (props) => {
                 <DropdownItem to="/admin/user-profile" tag={Link}>
                   <i className="ni ni-settings-gear-65" />
                   <span>Settings</span>
-                </DropdownItem>
-                <DropdownItem to="/admin/user-profile" tag={Link}>
-                  <i className="ni ni-calendar-grid-58" />
-                  <span>Activity</span>
                 </DropdownItem>
                 <DropdownItem to="/admin/user-profile" tag={Link}>
                   <i className="ni ni-support-16" />
@@ -120,7 +123,8 @@ const AdminNavbar = (props) => {
                       <i className="ni ni-key-25" />
                       <span className="nav-link-inner--text" style={{color:"black"}}>Login</span>
                     </NavLink>
-                  </NavItem><NavItem>
+                  </NavItem>
+                  <NavItem>
                     <NavLink
                       className="nav-link-icon"
                       to="/auth/register"
@@ -133,6 +137,8 @@ const AdminNavbar = (props) => {
               </>
             )}
           </Nav>
+          <RecentlyViewed className="ml-4" />
+            
         </Container>
       </Navbar>
     </>

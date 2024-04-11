@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { addToRecentlyViewed } from '../../redux/actions';
 
 // reactstrap components
 import {
@@ -17,6 +19,7 @@ import {
   import Header from "components/Headers/Header.js";
   
   const Category = () => {
+    const dispatch = useDispatch();
     const navigate = useNavigate();
     const [cardsData, setCardsData] = useState([]);
 
@@ -24,8 +27,16 @@ import {
       list();
     }, []);
 
-    const detail = (detailId) => {
-      console.log("detailId", detailId);
+    const addToRecentlyViewedProducts = (product) => {
+      console.log("product", product);
+      dispatch(addToRecentlyViewed(product));
+    };
+
+    const detail = (detailId, product) => {
+      // console.log("detailId", detailId);
+      // console.log("product", product);
+      
+      addToRecentlyViewedProducts(product);
       navigate(`/admin/productdetail/${detailId}`)
     };
 
@@ -33,7 +44,7 @@ import {
       axios
         .get('/product/list')
         .then((res) => {
-          console.log(res.data);
+          // console.log(res.data);
           setCardsData(res.data.product);
         })
         .catch((err) => {
@@ -77,7 +88,7 @@ import {
             <Col key={index} xl={index < 8 ? "3" : "2"} className="pb-3">
               <Card className="shadow">
                 <Row className="align-items-center">
-                  <div className="col" onClick={() => detail(card.detailId)}>
+                  <div className="col" onClick={() => detail(card.detailId, card)}>
                     <img
                       alt="..."
                       src={require(`../../assets/img/product/${card.img}`)}

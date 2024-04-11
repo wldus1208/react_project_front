@@ -1,8 +1,13 @@
 import React, { useState, useEffect  } from 'react';
 import axios from 'axios';
 import { calculateDiscountedPrice, numberCommas } from 'components/commonUtils';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { addToRecentlyViewed } from '../../redux/actions';
 
 const Cart = () => {
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
     const loginId = sessionStorage.getItem('loginId');
     const [detailId, setDetailId] = useState("");
     const [Data, setData] = useState([]);
@@ -13,7 +18,8 @@ const Cart = () => {
     const [disPrice, setDisPrice] = useState(0);
     const [deliveryFee, setDeliveryFee] = useState(0);
     const [totalPrice, setTotalPrice] = useState(0);
-    // const [selectedAmount, setSelectedAmount] = useState();
+    const [disText, setDisText] = useState("상품을 선택하시면 최적 혜택이 계산됩니다.");
+    const [checkedItemCount, setCheckedItemCount] = useState(0);
 
     useEffect(() => {
 
@@ -25,9 +31,6 @@ const Cart = () => {
           .then(res => {
             // console.log(res.data.cart);
             setData(res.data.cart)
-            // const amounts = res.data.cart.map(item => item.amount);
-            // console.log(amounts);
-            // selectedAmount(amounts)
           })
           .catch(error => {
               console.error('Error fetching store name:', error);
@@ -52,8 +55,6 @@ const Cart = () => {
         const newData = [...Data];
         newData[index].amount = value;
         setData(newData);
-
-        // setSelectedAmount(value);
     };
 
     const amountChange = (detailId) => {
@@ -69,7 +70,7 @@ const Cart = () => {
 
         axios.post("/cart/update/", params)
           .then(res => {
-            console.log(res.data);
+            // console.log(res.data);
             alert("수량이 변경되었습니다.")
             window.location.reload();
           })
@@ -95,7 +96,7 @@ const Cart = () => {
 
         axios.post("/cart/delete/", params)
           .then(res => {
-            console.log(res.data);
+            // console.log(res.data);
             window.location.reload();
           })
           .catch(error => {
@@ -108,8 +109,8 @@ const Cart = () => {
 
         // 전체 선택
         if (name === 'selectAll') {
-            console.log("selectAll");
-            console.log("checked", checked);
+            // console.log("selectAll");
+            // console.log("checked", checked);
             setSelectAll(checked);
             const updatedCheckedItems = {};
             Data.forEach((data) => {
@@ -117,38 +118,82 @@ const Cart = () => {
             });
             setCheckedItems(updatedCheckedItems);
             calculatePrice(updatedCheckedItems);
-        } else {
-            console.log("selected");
-            console.log("checked", checked);
 
-            setCheckedItems(() => ({
+            let itemCount = Object.values(updatedCheckedItems).filter(item => item === true).length;
+            setCheckedItemCount(itemCount);
+        } else {
+            // console.log("selected");
+            // console.log("checked", checked);
+            setSelectAll(false);
+
+            setCheckedItems(prevState => ({
+                ...prevState,
                 [name]: checked
             }));
-            calculatePrice({checkedItems, [name]: checked });
+            calculatePrice({...checkedItems, [name]: checked });
+
+            const itemCount = Object.values({ ...checkedItems, [name]: checked }).filter(item => item === true).length;
+            setCheckedItemCount(itemCount);
         }
     };
 
     const calculatePrice = (items) => {
-    //     const [disPrice, setDisPrice] = useState(0);
-    // const [deliveryFee, setDeliveryFee] = useState(0);
-    // const [totalPrice, setTotalPrice] = useState(0);
-        console.log("items", items);
-        let produt = 0;
+        // console.log("items", items);
+        let product = 0;
         let dis = 0;
         let delivery = 0;
         let total = 0;
+        let text = "";
+        let totaldis = 0;
 
         Data.forEach((data) => {
             if (items[data.detailId]) {
-                produt += data.price * data.amount;
+                product += data.price * data.amount;
                 dis += data.price - calculateDiscountedPrice(data.price * data.amount, data.discountPer)
             }
         });
-        total = (produt - dis) + delivery;
-        setProductPrice(produt);
-        setDisPrice(dis);
-        setDeliveryFee(delivery);
-        setTotalPrice(total);
+        total = (product - dis) + delivery;
+        totaldis = ((product - total) / product * 100).toFixed(0);
+
+        if(product === 0){
+            text = "상품을 선택하시면 최적 혜택이 계산됩니다.";
+        } else {
+            text = numberCommas(dis) + "원(" + totaldis + "%) 할인 받았어요!"
+        }
+        
+        setProductPrice(product); // 상품금액
+        setDisPrice(dis); // 할인금액
+        setDeliveryFee(delivery); // 배송비
+        setTotalPrice(total); // 결제금액
+        setDisText(text);
+        
+    };
+
+    const order = () => {
+        // console.log("productPrice", productPrice);
+        if(productPrice === 0) {
+            alert("주문하실 상품을 선택해주세요");
+            return false;
+        } else {
+            alert("주문!!!");
+        }
+    };
+
+    const dorder = () => {
+        alert("바로주문!!!");
+    };
+
+    const addToRecentlyViewedProducts = (product) => {
+        console.log("product", product);
+        dispatch(addToRecentlyViewed(product));
+      };
+
+    const detail = (detailId, product) => {
+        // console.log("detailId", detailId);
+        // console.log("product", product);
+        
+        addToRecentlyViewedProducts(product);
+        navigate(`/admin/productdetail/${detailId}`)
     };
 
   return (
@@ -187,8 +232,8 @@ const Cart = () => {
                                 </thead>
                                 {Data.map((data, index) => (
                                 <tbody key={index}>
-                                <tr>
-                                    <td><input type="checkbox" name={`checkbox${index}`} checked={checkedItems[data.detailId]} onChange={checkChange} /></td>
+                                <tr onClick={() => detail(data.detailId, data)}>
+                                    <td><input type="checkbox" name={`${data.detailId}`} checked={checkedItems[data.detailId]} onChange={checkChange} /></td>
                                     <td>
                                         <img
                                             alt="..."
@@ -224,7 +269,7 @@ const Cart = () => {
                                     </td>
                                     <td rowSpan="2" style={{textAlign:"center"}}>무료</td>
                                     <td>
-                                        <button type="button" className="btn btn-sm btn-dark mt-2" style={{width:"80px"}}>바로구매</button><br />
+                                        <button type="button" className="btn btn-sm btn-dark mt-2" style={{width:"80px"}} onClick={dorder}>바로구매</button><br />
                                         <button type="button" className="btn btn-sm btn-secondary" style={{width:"80px"}} onClick={() => del(data.detailId)}>삭제</button>
                                     </td>
                                 </tr>
@@ -259,7 +304,7 @@ const Cart = () => {
                 <div className="col-md-4 mt-6" style={{border: "1px solid black", height: "315px", fontSize:"16px"}}>
                     <div className="position-sticky">
                         <div className="p-3">
-                            <span style={{ float: "left" }}>상품금액 (0)</span>
+                            <span style={{ float: "left" }}>상품금액 ({checkedItemCount})</span>
                             <span style={{ float: "right" }}>{numberCommas(productPrice)}원</span>
                         </div>
                         <div className="p-3">
@@ -276,10 +321,10 @@ const Cart = () => {
                             <span style={{ float: "right", color:"red", fontWeight:"bold" }}>{numberCommas(totalPrice)}원</span>
                         </div>
                         <div className="mt-4 p-1" style={{textAlign:"center", backgroundColor: "#e0e0e0"}}>
-                            <p>상품을 선택하시면 최적 혜택이 계산됩니다.</p>
+                            <p>{disText}</p>
                         </div>
                     </div>
-                    <button type="button" style={{width:"100%"}} className="btn btn-danger btn-lg mt-3">주문하기</button>
+                    <button type="button" style={{width:"100%"}} className="btn btn-danger btn-lg mt-3" onClick={order}>주문하기</button>
                 </div>
             </div>
         </main>
