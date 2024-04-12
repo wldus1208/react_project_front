@@ -125,7 +125,7 @@ const CateDetail = () => {
 
             axios.post("/cart/insert/", params)
             .then(res => {
-                console.log(res);
+                // console.log(res);
                 if(res.data.resultMsg === "SUCCESS") {
                     setDynamicText("상품을 쇼핑백에 담았습니다.");
                     setShowModal(true);
@@ -190,7 +190,7 @@ const CateDetail = () => {
                         <span style={{ textDecoration: "line-through", color: "gray", marginRight: "10px" }}>{numberCommas(price)}</span>
                         <span style={{ fontWeight: "bold", marginRight: "10px" }}>{discountedPrice}</span>
                     </h2>
-                    <p className="lead">
+                    <div className="lead">
                         <span><i className="ni ni-air-baloon" /> 최대 {rewardPoints}M 적립예정적립예정</span>
                         <hr />
                         <span><i className="ni ni-spaceship" /> 지금 결제 시 오늘 출발<br />무료배송 / CJ 대한통운<br /><span style={{color:"red"}}>04/06(토)</span>이내 도착확률 98%<br />전국 평균 기준</span>
@@ -198,7 +198,7 @@ const CateDetail = () => {
                         <span><i className="ni ni-credit-card" /> LFmall 신용카드 결제시 5% 추가할인</span> <br/>
                         <span><i className="ni ni-credit-card" /> LFPay KB국민카드 최대 9,000원 즉시할인</span> 
                         {/* <spnn><i className="ni ni-credit-card" /> LFPay KB국민카드 최대 9,000원 즉시할인                                                                                                                                                                                                         / 카드별 무이자</spnn> */}
-                    </p>
+                    </div>
                     <hr />
                     <div>
                         <p>수량</p>

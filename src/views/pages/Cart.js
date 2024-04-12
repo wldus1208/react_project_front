@@ -80,6 +80,7 @@ const Cart = () => {
     };
 
     const del = (detailId) => {
+        // console.log("detailId", detailId);
         setShowModal(true);
         setDetailId(detailId);
     };
@@ -89,19 +90,34 @@ const Cart = () => {
     };
 
     const yes = () => {
-        // console.log(detailId);
+        console.log(detailId);
         let params = new URLSearchParams()
         params.append('loginId', loginId);
         params.append('detailId', detailId);
 
         axios.post("/cart/delete/", params)
           .then(res => {
-            // console.log(res.data);
+            console.log(res);
             window.location.reload();
           })
           .catch(error => {
               console.error('Error fetching store name:', error);
           });
+    };
+
+    const SelectAll = () => {
+        const allChecked = Object.values(checkedItems).every(item => item);
+        const updatedCheckedItems = {};
+        Data.forEach((data) => {
+            updatedCheckedItems[data.detailId] = !allChecked;
+            setSelectAll(!allChecked);
+        });
+        
+        setCheckedItems(updatedCheckedItems);
+        calculatePrice(updatedCheckedItems);
+
+        let itemCount = Object.values(updatedCheckedItems).filter(item => item === true).length;
+        setCheckedItemCount(itemCount);
     };
 
     const checkChange = (event) => {
@@ -112,15 +128,8 @@ const Cart = () => {
             // console.log("selectAll");
             // console.log("checked", checked);
             setSelectAll(checked);
-            const updatedCheckedItems = {};
-            Data.forEach((data) => {
-                updatedCheckedItems[data.detailId] = checked;
-            });
-            setCheckedItems(updatedCheckedItems);
-            calculatePrice(updatedCheckedItems);
-
-            let itemCount = Object.values(updatedCheckedItems).filter(item => item === true).length;
-            setCheckedItemCount(itemCount);
+            SelectAll(checked);
+            
         } else {
             // console.log("selected");
             // console.log("checked", checked);
@@ -175,12 +184,14 @@ const Cart = () => {
             alert("주문하실 상품을 선택해주세요");
             return false;
         } else {
-            alert("주문!!!");
+            // navigate(`/admin/productdetail/${detailId}`)
+            navigate("/admin/order");
         }
     };
 
     const dorder = () => {
-        alert("바로주문!!!");
+        // navigate(`/admin/productdetail/${detailId}`)
+        navigate("/admin/order");
     };
 
     const addToRecentlyViewedProducts = (product) => {
@@ -196,20 +207,39 @@ const Cart = () => {
         navigate(`/admin/productdetail/${detailId}`)
     };
 
+    const selectDel = () => {
+        const selectedIds = Object.entries(checkedItems)
+        .filter(([detailId, isChecked]) => isChecked) 
+        .map(([detailId, isChecked]) => detailId);
+
+        if (selectedIds.length === 0) {
+            alert("삭제할 상품을 선택하세요.");
+        } else {
+            del(selectedIds);
+        }
+    };
+
   return (
     <div className="container marketing">
         <br />
-        <div className="row" style={{marginTop: "60px"}}>
+        <div className="row border" style={{marginTop: "60px"}}>
         </div>
         <main className="container">
             <div className="row">
                 <div className="col-md-8">
-                    <h3 className="pb-4 mb-4 border-bottom">
+                    <h2 className="pb-3 mb-3 mt-2">
                         쇼핑백
-                    </h3>
+                    </h2>
                     <div className=""> 
-                        <button type="button" className="btn btn-sm btn-secondary" style={{width:"70px", height:"40px"}}>전체선택</button>
-                        <button type="button" className="btn btn-sm btn-secondary" style={{width:"70px", height:"40px"}}>선택삭제</button>
+                        <button type="button" name="selectAll" className="btn btn-sm btn-secondary" 
+                            style={{width:"70px", height:"40px"}}
+                            onClick={SelectAll}
+                        >전체선택
+                        </button>
+                        <button type="button" className="btn btn-sm btn-secondary" 
+                            style={{width:"70px", height:"40px"}}
+                            onClick={selectDel}
+                        >선택삭제</button>
                     </div>
                     <div className="mt-4 border-top">
                     
@@ -232,16 +262,16 @@ const Cart = () => {
                                 </thead>
                                 {Data.map((data, index) => (
                                 <tbody key={index}>
-                                <tr onClick={() => detail(data.detailId, data)}>
+                                <tr>
                                     <td><input type="checkbox" name={`${data.detailId}`} checked={checkedItems[data.detailId]} onChange={checkChange} /></td>
-                                    <td>
+                                    <td onClick={() => detail(data.detailId, data)}>
                                         <img
                                             alt="..."
                                             src={require(`../../assets/img/product/${data.img}`)}
                                             style={ImageStyle()}
                                         />
                                     </td>
-                                    <td>
+                                    <td onClick={() => detail(data.detailId, data)}>
                                         <p>{data.brand}</p>
                                         <p style={ellipsisStyle()}>{data.detailName}</p>
                                         <p>{data.amount}개</p>
