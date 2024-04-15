@@ -83,7 +83,7 @@ var routes = [
     layout: "/admin",
   },
   {
-    path: "/order",
+    path: "/order/:detailId",
     name: "Order",
     icon: "ni ni-planet text-blue",
     component: <Order />,

@@ -184,14 +184,19 @@ const Cart = () => {
             alert("주문하실 상품을 선택해주세요");
             return false;
         } else {
+            console.log(checkedItems);
+            const selectedDetailIds = Object.keys(checkedItems).filter(key => checkedItems[key]); 
+            const selectedDetailIdsString = selectedDetailIds.join(','); 
+
+            navigate(`/admin/order/${selectedDetailIdsString}`);
             // navigate(`/admin/productdetail/${detailId}`)
-            navigate("/admin/order");
+            // navigate("/admin/order");
         }
     };
 
-    const dorder = () => {
-        // navigate(`/admin/productdetail/${detailId}`)
-        navigate("/admin/order");
+    const dorder = (detailId) => {
+        // console.log(detailId);
+        navigate(`/admin/order/${detailId}`);
     };
 
     const addToRecentlyViewedProducts = (product) => {
@@ -299,7 +304,7 @@ const Cart = () => {
                                     </td>
                                     <td rowSpan="2" style={{textAlign:"center"}}>무료</td>
                                     <td>
-                                        <button type="button" className="btn btn-sm btn-dark mt-2" style={{width:"80px"}} onClick={dorder}>바로구매</button><br />
+                                        <button type="button" className="btn btn-sm btn-dark mt-2" style={{width:"80px"}} onClick={() => dorder(data.detailId)}>바로구매</button><br />
                                         <button type="button" className="btn btn-sm btn-secondary" style={{width:"80px"}} onClick={() => del(data.detailId)}>삭제</button>
                                     </td>
                                 </tr>

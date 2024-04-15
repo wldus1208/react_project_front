@@ -1,37 +1,49 @@
 import React, { useState, useEffect  } from 'react';
 import axios from 'axios';
 import { calculateDiscountedPrice, numberCommas } from 'components/commonUtils';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { addToRecentlyViewed } from '../../redux/actions';
+import { useNavigate, useParams } from 'react-router-dom';
+import DaumPostcode from 'react-daum-postcode';
 
 const Order = () => {
     const navigate = useNavigate();
-    const dispatch = useDispatch();
+    const { detailId } = useParams();
     const loginId = sessionStorage.getItem('loginId');
     const [isVisible, setIsVisible] = useState(false);
     const [paymentType, setPaymentType] = useState('');
     const [count, setCount] = useState(0);
     const [rewardPoints, setRewardPoints] = useState(0);
-    const [detailId, setDetailId] = useState("");
     const [Data, setData] = useState([]);
     const [productPrice, setProductPrice] = useState(0);
+    const [disPer, setDisPer] = useState(0);
     const [disPrice, setDisPrice] = useState(0);
     const [deliveryFee, setDeliveryFee] = useState(0);
     const [totalPrice, setTotalPrice] = useState(0);
+    const [postalCode, setPostalCode] = useState('');
+    const [address, setAddress] = useState('');
+    // const [detailAddress, setDetailAddress] = useState('');
+    const [isAddressModalOpen, setAddressModalOpen] = useState(true);
+    const [show, setShow] = useState(false);
 
     useEffect(() => {
-
         list();
     }, []);
 
     const list = () => {
-        axios.post("/cart/list/")
+        // console.log(detailId);
+
+        let params = new URLSearchParams()
+        params.append('detailId', detailId)
+
+        axios.post("/order/list/", params)
           .then(res => {
-            // console.log(res.data.cart);
-            setData(res.data.cart)
-            // const calculatedRewardPoints = Math.min(calculateDiscountedPrice(price,discountPer) * 0.01, 10000).toFixed(0);
-            // setRewardPoints(calculatedRewardPoints);
+            // console.log(res.data);
+            setData(res.data.order);
+
+            let cnt = res.data.order.length;
+            setCount(cnt);
+            // console.log(res.data.order.length);
+            calculatePrice(res.data.order);
+            
           })
           .catch(error => {
               console.error('Error fetching store name:', error);
@@ -41,6 +53,15 @@ const Order = () => {
     const ImageStyle = () => ({
         width: '90px', 
         height: '114px', 
+    });
+
+    const buttonStyle = (card) => ({
+        backgroundImage: `url(${require(`../../assets/img/card/${card.img}`)})`,
+        backgroundSize: 'cover', 
+        backgroundPosition: 'center', 
+        width: '100px', 
+        height: '80px', 
+        marginTop: "5px"
     });
 
     const ellipsisStyle = () => ({
@@ -60,24 +81,60 @@ const Order = () => {
         }
     };
 
-    const addToRecentlyViewedProducts = (product) => {
-        dispatch(addToRecentlyViewed(product));
-    };
-    
-
-    const detail = (detailId, product) => {
-        // console.log("detailId", detailId);
-        // console.log("product", product);
-        
-        addToRecentlyViewedProducts(product);
-        navigate(`/admin/productdetail/${detailId}`)
-    };
-
     const buttonClick = (type) => {
         setPaymentType(type);
         setIsVisible(true);
     };
 
+    const card = [
+        {img: "kb.jpeg"},
+        {img: "shin.png"},
+        {img: "lotte.png"},
+        {img: "hyun.png"},
+        {img: "sam.png"},
+        {img: "nh.png"},
+        {img: "hana.png"},
+        {img: "wo.png"},
+        {img: "kakao.jpeg"},
+        {img: "etc.png"}
+    ];
+
+    const handleComplete = (data) => {
+        // console.log(data);
+        setPostalCode(data.zonecode);
+        setAddress(data.address);
+        // setAddressModalOpen(false);
+        setShow(false);
+    };
+
+    const calculatePrice = (Data) => {
+        console.log(Data);
+        let product = 0;
+        let dis = 0;
+        let delivery = 0;
+        let total = 0;
+        let totaldis = 0;
+        let point = 0;
+
+        Object.values(Data).forEach((data) => {
+            if (data) {
+                product += data.price * data.amount;
+                dis += data.price - calculateDiscountedPrice(data.price * data.amount, data.discountPer);
+                
+            }
+        });
+        
+        total = (product - dis) + delivery;
+        totaldis = ((product - total) / product * 100).toFixed(0);
+        point += Math.min(calculateDiscountedPrice(product, totaldis) * 0.01, 10000).toFixed(0);
+
+        setRewardPoints(parseInt(point)); // 적립금
+        setProductPrice(product); // 상품금액
+        setDisPrice(dis); // 할인금액
+        setDeliveryFee(delivery); // 배송비
+        setTotalPrice(total); // 결제금액
+        setDisPer(totaldis); // 할인율
+    };
 
   return (
     <div className="container marketing">
@@ -122,7 +179,7 @@ const Order = () => {
                                     </td>
                                     <td>
                                         <p>{data.brand}</p>
-                                        <p style={ellipsisStyle()} onClick={() => detail(data.detailId, data)}>{data.detailName}</p>
+                                        <p style={ellipsisStyle()}>{data.detailName}</p>
                                         <p>{data.amount}개</p>
                                     </td>
                                     <td style={{textAlign:"center"}}>
@@ -168,10 +225,16 @@ const Order = () => {
                                 <tr>
                                     <td>주소</td>
                                     <td>
-                                        <input type='text' style={{width:"90px"}}/>
-                                        <button type='button' className='btn btn-sm border ml-1' style={{width:"90px"}}>우편번호 찾기</button> <br />
-                                        <input type='text' style={{width:"300px"}}/> <br />
-                                        <input type='text' className='mt-1' style={{width:"300px"}} placeholder='상세주소를 입력해주세요'/>
+                                        <input type='text' style={{ width: "90px", backgroundColor: "#f0f0f0" }} value={postalCode} readOnly/>
+                                        <button type='button' className='btn btn-sm border ml-1' style={{ width: "90px" }} onClick={() => setShow(true)}>우편번호 찾기</button> <br />
+                                        <input type='text' style={{ width: "300px", backgroundColor: "#f0f0f0" }} value={address} readOnly/> <br />
+                                        <input type='text' className='mt-1' style={{ width: "300px" }} placeholder='상세주소를 입력해주세요' />
+                                        {show && (
+                                            <div>
+                                            {isAddressModalOpen && <DaumPostcode onComplete={handleComplete} />}
+                                            </div>
+                                        )}
+                                        
                                     </td>
                                 </tr>
                                 <tr>
@@ -198,7 +261,7 @@ const Order = () => {
                         <span style={{fontSize:"18px"}}>결제수단</span><br />
                     </div>
                     <div className="mt-3">
-                        <span style={{fontSize:"16px"}}><input type='radio' checked style={{width:"20px", height:"20px"}} /> 일반결제</span><br />
+                        <span style={{fontSize:"16px"}}><input type='radio' defaultChecked style={{width:"20px", height:"20px"}} /> 일반결제</span><br />
                         <div className='mt-2'>
                             <button type="button" className="btn btn-outline-dark" onClick={() => buttonClick('creditCard')}>
                                 신용카드
@@ -222,8 +285,16 @@ const Order = () => {
                         {isVisible && (
                         <div className='mt-2'>
                             {paymentType === 'creditCard' && (
-                                <div>
-                                    신용카드
+                                <div >
+                                    {card.map((card, index) => {
+                                    return (
+                                        <React.Fragment key={index}>
+                                            <button type="button" className="btn btn-outline-light" style={buttonStyle(card)}>
+                                            </button>
+                                            {index % 5 === 4 && <br />}
+                                        </React.Fragment>
+                                    );
+                                    })}
                                 </div>
                             )}
                             {paymentType === 'bankTransfer' && (
@@ -266,7 +337,7 @@ const Order = () => {
                             <span style={{ float: "right" }}>{numberCommas(productPrice)}원</span>
                         </div>
                         <div className="p-3">
-                            <span style={{ float: "left" }}>할인 합계 ()</span>
+                            <span style={{ float: "left" }}>할인 합계 ({disPer}%)</span>
                             <span style={{ float: "right" }}>{numberCommas(disPrice)}원</span>
                         </div>
                         <div className="p-3">
