@@ -20,9 +20,21 @@ const Order = () => {
     const [totalPrice, setTotalPrice] = useState(0);
     const [postalCode, setPostalCode] = useState('');
     const [address, setAddress] = useState('');
-    // const [detailAddress, setDetailAddress] = useState('');
     const [isAddressModalOpen, setAddressModalOpen] = useState(true);
     const [show, setShow] = useState(false);
+    const [deliveryOption, setDeliveryOption] = useState('');
+    const [customLocation, setCustomLocation] = useState('');
+    const [showCustomLocationInput, setShowCustomLocationInput] = useState(false);
+    const [cardType, setCardType] = useState('');
+
+    // 배송정보
+    const [delivery, setDelivery] = useState({
+        name: '',
+        tel1: '',
+        tel2: '',
+        tel3: '',
+        addDetail: ''
+    })
 
     useEffect(() => {
         list();
@@ -71,32 +83,22 @@ const Order = () => {
         fontSize: '13px'
     });    
 
-    const order = () => {
-        // console.log("productPrice", productPrice);
-        if(productPrice === 0) {
-            alert("주문하실 상품을 선택해주세요");
-            return false;
-        } else {
-            alert("주문!!!");
-        }
-    };
-
     const buttonClick = (type) => {
         setPaymentType(type);
         setIsVisible(true);
     };
 
     const card = [
-        {img: "kb.jpeg"},
-        {img: "shin.png"},
-        {img: "lotte.png"},
-        {img: "hyun.png"},
-        {img: "sam.png"},
-        {img: "nh.png"},
-        {img: "hana.png"},
-        {img: "wo.png"},
-        {img: "kakao.jpeg"},
-        {img: "etc.png"}
+        {img: "kb.jpeg", company: "kb"},
+        {img: "shin.png", company: "shin"},
+        {img: "lotte.png", company: "lotte"},
+        {img: "hyun.png", company: "hyun"},
+        {img: "sam.png", company: "sam"},
+        {img: "nh.png", company: "nh"},
+        {img: "hana.png", company: "hana"},
+        {img: "wo.png", company: "wo"},
+        {img: "kakao.jpeg", company: "kakao"},
+        {img: "etc.png", company: "etc"}
     ];
 
     const handleComplete = (data) => {
@@ -134,6 +136,72 @@ const Order = () => {
         setDeliveryFee(delivery); // 배송비
         setTotalPrice(total); // 결제금액
         setDisPer(totaldis); // 할인율
+    };
+
+    const payment = () => {
+        if(check()){
+            let params = new URLSearchParams()
+            params.append('loginId', loginId)
+            params.append('detailId', detailId)
+            params.append('paymentMethod', paymentType)
+            params.append('creaditInfo', cardType)
+            params.append('status', "주문")
+            params.append('phone', delivery.tel1 + delivery.tel2 + delivery.tel3)
+            params.append('address', address)
+            params.append('addDetail', delivery.addDetail)
+            params.append('zip', postalCode)
+            params.append('location', deliveryOption)
+            params.append('totPayment', totalPrice)
+
+            const amountString = Data.map(data => data.amount).join(',');
+            // console.log(amountString);
+            params.append('amount', amountString)
+
+            axios.post("/order/insert/", params)
+            .then(res => {
+                console.log(res);
+                if(res.data.resultMsg === "SUCCESS") {
+                    console.log(res);
+                } 
+            })
+            .catch(error => {
+                console.error('Error fetching store name:', error);
+            });
+        }
+    };
+
+    const check = () => {
+        if(delivery.name === "") {
+            alert("이름을 입력해 주세요.");
+            return false;
+        }
+        if(delivery.addDetail === "") {
+            alert("주소를 입력해 주세요.");
+            return false;
+        }
+        return true;
+    };
+
+    const onChangeDelivery = (e) => {
+        setDelivery({
+          ...delivery,
+          [e.target.name]: e.target.value,
+        })
+    }
+
+    const handleDeliveryOptionChange = (e) => {
+        const selectedOption = e.target.value;
+        setDeliveryOption(selectedOption);
+      
+        if (selectedOption === "직접 입력") {
+          setShowCustomLocationInput(true); 
+        } else {
+          setShowCustomLocationInput(false);
+        }
+    };
+
+    const cardClick = (com) => {
+        setCardType(com);
     };
 
   return (
@@ -178,6 +246,7 @@ const Order = () => {
                                         />
                                     </td>
                                     <td>
+                                        <input type='hidden' value={data.cartId}></input>
                                         <p>{data.brand}</p>
                                         <p style={ellipsisStyle()}>{data.detailName}</p>
                                         <p>{data.amount}개</p>
@@ -211,15 +280,15 @@ const Order = () => {
                                 <tr>
                                     <td>받는 분</td>
                                     <td>
-                                        <input type='text' placeholder='받는 분의 이름을 입력해주세요' style={{width:"200px"}}/>
+                                        <input type='text' placeholder='받는 분의 이름을 입력해주세요' name='name' style={{width:"200px"}} onChange={onChangeDelivery}/>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>연락처</td>
                                     <td>
-                                        <input type='text' maxLength="4" style={{width:"150px"}}/> - 
-                                        <input type='text' maxLength="4" style={{width:"150px"}}/> - 
-                                        <input type='text' maxLength="4" style={{width:"150px"}}/>
+                                        <input type='text' maxLength="4" style={{width:"150px"}} name='tel1' onChange={onChangeDelivery} /> - 
+                                        <input type='text' maxLength="4" style={{width:"150px"}} name='tel2' onChange={onChangeDelivery} /> - 
+                                        <input type='text' maxLength="4" style={{width:"150px"}} name='tel3' onChange={onChangeDelivery} />
                                     </td>
                                 </tr>
                                 <tr>
@@ -228,7 +297,7 @@ const Order = () => {
                                         <input type='text' style={{ width: "90px", backgroundColor: "#f0f0f0" }} value={postalCode} readOnly/>
                                         <button type='button' className='btn btn-sm border ml-1' style={{ width: "90px" }} onClick={() => setShow(true)}>우편번호 찾기</button> <br />
                                         <input type='text' style={{ width: "300px", backgroundColor: "#f0f0f0" }} value={address} readOnly/> <br />
-                                        <input type='text' className='mt-1' style={{ width: "300px" }} placeholder='상세주소를 입력해주세요' />
+                                        <input type='text' className='mt-1' style={{ width: "300px" }} placeholder='상세주소를 입력해주세요' name='addDetail' onChange={onChangeDelivery}/>
                                         {show && (
                                             <div>
                                             {isAddressModalOpen && <DaumPostcode onComplete={handleComplete} />}
@@ -240,14 +309,27 @@ const Order = () => {
                                 <tr>
                                     <td>배송장소</td>
                                     <td>
-                                        <select style={{ width: "300px" }}>
-                                            <option value="">배송 장소를 선택해주세요(선택)</option>
-                                            <option value="">직접 받고 부재 시 문 앞에 놓아주세요</option>
-                                            <option value="">문 앞에 놓아주세요</option>
-                                            <option value="">경비실에 맡겨주세요</option>
-                                            <option value="">택배함에 넣어주세요</option>
-                                            <option value="">직접 입력하기</option>
-                                        </select>
+                                    <select
+                                        style={{ width: "300px" }}
+                                        value={deliveryOption}
+                                        onChange={handleDeliveryOptionChange}
+                                        >
+                                        <option value="">배송 장소를 선택해주세요(선택)</option>
+                                        <option value="직접 받기">직접 받고 부재 시 문 앞에 놓아주세요</option>
+                                        <option value="문 앞">문 앞에 놓아주세요</option>
+                                        <option value="경비실">경비실에 맡겨주세요</option>
+                                        <option value="택배함">택배함에 넣어주세요</option>
+                                        <option value="직접 입력">직접 입력하기</option>
+                                    </select> <br />
+                                    {showCustomLocationInput && (
+                                    <input
+                                        type="text"
+                                        placeholder="배송 장소를 입력해주세요"
+                                        value={customLocation}
+                                        onChange={(e) => setCustomLocation(e.target.value)}
+                                        style={{ marginTop: "10px", width: "300px" }}
+                                    />
+                                    )}
                                     </td>
                                 </tr>
                             </tbody>
@@ -289,7 +371,12 @@ const Order = () => {
                                     {card.map((card, index) => {
                                     return (
                                         <React.Fragment key={index}>
-                                            <button type="button" className="btn btn-outline-light" style={buttonStyle(card)}>
+                                            <button 
+                                                type="button" 
+                                                className="btn btn-outline-light" 
+                                                style={buttonStyle(card)}
+                                                onClick={() => cardClick(card.company)}
+                                            >
                                             </button>
                                             {index % 5 === 4 && <br />}
                                         </React.Fragment>
@@ -350,7 +437,7 @@ const Order = () => {
                             <span style={{ float: "right", color:"red", fontWeight:"bold" }}>{numberCommas(totalPrice)}원</span>
                         </div>
                     </div>
-                    <button type="button" style={{width:"100%"}} className="btn btn-danger btn-lg mt-3" onClick={order}>결제하기</button>
+                    <button type="button" style={{width:"100%"}} className="btn btn-danger btn-lg mt-3" onClick={payment}>결제하기</button>
                     <div style={{backgroundColor: "#e0e0e0"}}>
                         <span>결제대행서비스 약관 모두 동의</span> <br />
                         <span>구매조건 확인 및 개인정보 수집/이용 동의</span>

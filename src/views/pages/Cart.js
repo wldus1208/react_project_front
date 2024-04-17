@@ -184,7 +184,7 @@ const Cart = () => {
             alert("주문하실 상품을 선택해주세요");
             return false;
         } else {
-            console.log(checkedItems);
+            // console.log(checkedItems);
             const selectedDetailIds = Object.keys(checkedItems).filter(key => checkedItems[key]); 
             const selectedDetailIdsString = selectedDetailIds.join(','); 
 
