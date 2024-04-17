@@ -10,6 +10,7 @@ import Cate1 from "views/pages/Category.js";
 import CateDetail from "views/pages/CateDetail.js";
 import Cart from "views/pages/Cart.js";
 import Order from "views/pages/Order.js";
+import Payment from "views/pages/Payment.js";
 
 var routes = [
   {
@@ -87,6 +88,13 @@ var routes = [
     name: "Order",
     icon: "ni ni-planet text-blue",
     component: <Order />,
+    layout: "/admin",
+  },
+  {
+    path: "/payment",
+    name: "Payment",
+    icon: "ni ni-planet text-blue",
+    component: <Payment />,
     layout: "/admin",
   },
 ];
