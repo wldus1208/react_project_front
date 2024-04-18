@@ -18,11 +18,11 @@ const Payment = (effect, deps) => {
     const { IMP } = window;
     IMP.init("imp82567468"); 
     const data = {
-      pg: 'html5_inicis', // PG사 (필수항목)
+      pg: 'kakaopay', // PG사 (필수항목)
       pay_method: 'card', // 결제수단 (필수항목)
-      merchant_uid: `mid_${new Date().getTime()}`, // 결제금액 (필수항목)
+      merchant_uid: `mid_${new Date().getTime()}`,  
       name: '결제 테스트', // 주문명 (필수항목)
-      amount: '1', // 금액 (필수항목)
+      amount: 1, // 금액 (필수항목) 
       custom_data: { name: '부가정보', desc: '세부 부가정보' },
       buyer_email: "gildong@gmail.com",
       buyer_name: "홍길동",

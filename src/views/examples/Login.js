@@ -46,6 +46,7 @@ const Login = () => {
   const Signin = async () => {
     Session.set('loginId', '')
     Session.set('loginName', '')
+    Session.set('email', '')
 
     let params = new URLSearchParams()
     params.append('loginId', account.lgnId)
@@ -57,6 +58,7 @@ const Login = () => {
           alert(res.data.resultMsg)
           Session.set('loginId', res.data.loginId)
           Session.set('name', res.data.name)
+          Session.set('email', res.data.email)
           sessionStorage.setItem('loginId', res.data.loginId)
           sessionStorage.setItem('name', res.data.name)
           sessionStorage.setItem('email', res.data.email)
