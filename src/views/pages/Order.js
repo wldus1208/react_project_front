@@ -36,7 +36,7 @@ const Order = () => {
         bankTransfer: false,
         kakaopay: false,
         naverPay: false,
-        toss: false,
+        tosspay: false,
         payco: false,
     });
 
@@ -214,13 +214,24 @@ const Order = () => {
             .then(res => {
                 console.log(res);
                 if(res.data.resultMsg === "SUCCESS") {
-                    console.log(res);
+                    let params = new URLSearchParams()
+                    params.append('loginId', loginId);
+                    params.append('detailId', detailId);
+
+                    axios.post("/cart/delete/", params)
+                    .then(res => {
+                        console.log(res);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching store name:', error);
+                    });
                 } 
             })
             .catch(error => {
                 console.error('Error fetching store name:', error);
             });
             alert('결제 성공');
+            navigate("/");
         } else {
             alert(`결제 실패 : ${error_msg}`);
         }
@@ -436,9 +447,9 @@ const Order = () => {
                             </ButtonToggle>
                             <ButtonToggle
                                 type="button"
-                                className={buttonStates.toss ? 'btn btn-info' : 'btn btn-outline-info'}
-                                checked={buttonStates.toss}
-                                onClick={() => buttonClick('toss')}
+                                className={buttonStates.tosspay ? 'btn btn-info' : 'btn btn-outline-info'}
+                                checked={buttonStates.tosspay}
+                                onClick={() => buttonClick('tosspay')}
                                 >
                                 Toss
                             </ButtonToggle>
