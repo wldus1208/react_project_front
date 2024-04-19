@@ -20,6 +20,7 @@ const Cart = () => {
     const [totalPrice, setTotalPrice] = useState(0);
     const [disText, setDisText] = useState("상품을 선택하시면 최적 혜택이 계산됩니다.");
     const [checkedItemCount, setCheckedItemCount] = useState(0);
+    const [productCnt, setProductCnt] = useState(0);
 
     useEffect(() => {
 
@@ -31,6 +32,8 @@ const Cart = () => {
           .then(res => {
             // console.log(res.data.cart);
             setData(res.data.cart)
+            console.log(res.data.cart.length);
+            setProductCnt(res.data.cart.length)
           })
           .catch(error => {
               console.error('Error fetching store name:', error);
@@ -265,58 +268,73 @@ const Cart = () => {
                                         <th></th>
                                     </tr>
                                 </thead>
-                                {Data.map((data, index) => (
-                                <tbody key={index}>
-                                <tr>
-                                    <td><input type="checkbox" name={`${data.detailId}`} checked={checkedItems[data.detailId]} onChange={checkChange} /></td>
-                                    <td onClick={() => detail(data.detailId, data)}>
-                                        <img
-                                            alt="..."
-                                            src={require(`../../assets/img/product/${data.img}`)}
-                                            style={ImageStyle()}
-                                        />
-                                    </td>
-                                    <td onClick={() => detail(data.detailId, data)}>
-                                        <p>{data.brand}</p>
-                                        <p style={ellipsisStyle()}>{data.detailName}</p>
-                                        <p>{data.amount}개</p>
-                                        <select
-                                            value={data.amount}
-                                            id={`numberSelect-${data.detailId}`}
-                                            style={{ width: "95px", height: "30px" }}
-                                            onChange={SelectChange(data.detailId, index)}
-                                        >
-                                            <option value="">선택</option>
-                                            {Array.from({length: 20}, (_, index) => index + 1).map(num => (
-                                            <option key={num} value={num}>{num}</option>
-                                            ))}
-                                        </select>
-                                        <button type="button" className="btn btn-sm btn-secondary" style={{width:"65px"}} onClick={() => amountChange(data.detailId)}>수량변경</button>
-                                    </td>
-                                    <td style={{textAlign:"center"}}>
-                                        <p style={{ textDecoration: "line-through", color: "gray" }}>{numberCommas(data.price * data.amount)}</p>
-                                        <p style={{ fontWeight: "bold" }}>
-                                            {numberCommas(calculateDiscountedPrice(data.price * data.amount, data.discountPer))}
-                                        </p>
-                                        <p style={{ fontSize:"10px" }}>
-                                            {numberCommas(Math.min(calculateDiscountedPrice(data.price * data.amount, data.discountPer) * 0.01, 10000).toFixed(0))}M 적립예정
-                                        </p>
-                                    </td>
-                                    <td rowSpan="2" style={{textAlign:"center"}}>무료</td>
-                                    <td>
-                                        <button type="button" className="btn btn-sm btn-dark mt-2" style={{width:"80px"}} onClick={() => dorder(data.detailId)}>바로구매</button><br />
-                                        <button type="button" className="btn btn-sm btn-secondary" style={{width:"80px"}} onClick={() => del(data.detailId)}>삭제</button>
-                                    </td>
-                                </tr>
-                                </tbody>
-                                ))}
-                                <tfoot style={{backgroundColor:"#e0e0e0", textAlign:"center"}}>
-                                    <tr>
-                                        <td colSpan="6" style={{fontSize:"18px"}}>
-                                        상품금액 <span>{numberCommas(productPrice)}원</span> - 할인금액 <span>{numberCommas(disPrice)}</span> + 배송비 <span>{numberCommas(deliveryFee)}</span> = 결제금액 <span style={{ color:"red", fontWeight:"bold" }}>{numberCommas(totalPrice)}원</span>
-                                        </td>
-                                    </tr>
+                                {productCnt.length !== 0 ? (
+                                    <>
+                                    {Data.map((data, index) => (
+                                        <tbody key={index}>
+                                        <tr>
+                                            <td><input type="checkbox" name={`${data.detailId}`} checked={checkedItems[data.detailId]} onChange={checkChange} /></td>
+                                            <td onClick={() => detail(data.detailId, data)}>
+                                                <img
+                                                    alt="..."
+                                                    src={require(`../../assets/img/product/${data.img}`)}
+                                                    style={ImageStyle()}
+                                                />
+                                            </td>
+                                            <td onClick={() => detail(data.detailId, data)}>
+                                                <p>{data.brand}</p>
+                                                <p style={ellipsisStyle()}>{data.detailName}</p>
+                                                <p>{data.amount}개</p>
+                                                <select
+                                                    value={data.amount}
+                                                    id={`numberSelect-${data.detailId}`}
+                                                    style={{ width: "95px", height: "30px" }}
+                                                    onChange={SelectChange(data.detailId, index)}
+                                                >
+                                                    <option value="">선택</option>
+                                                    {Array.from({length: 20}, (_, index) => index + 1).map(num => (
+                                                    <option key={num} value={num}>{num}</option>
+                                                    ))}
+                                                </select>
+                                                <button type="button" className="btn btn-sm btn-secondary" style={{width:"65px"}} onClick={() => amountChange(data.detailId)}>수량변경</button>
+                                            </td>
+                                            <td style={{textAlign:"center"}}>
+                                                <p style={{ textDecoration: "line-through", color: "gray" }}>{numberCommas(data.price * data.amount)}</p>
+                                                <p style={{ fontWeight: "bold" }}>
+                                                    {numberCommas(calculateDiscountedPrice(data.price * data.amount, data.discountPer))}
+                                                </p>
+                                                <p style={{ fontSize:"10px" }}>
+                                                    {numberCommas(Math.min(calculateDiscountedPrice(data.price * data.amount, data.discountPer) * 0.01, 10000).toFixed(0))}M 적립예정
+                                                </p>
+                                            </td>
+                                            <td rowSpan="2" style={{textAlign:"center"}}>무료</td>
+                                            <td>
+                                                <button type="button" className="btn btn-sm btn-dark mt-2" style={{width:"80px"}} onClick={() => dorder(data.detailId)}>바로구매</button><br />
+                                                <button type="button" className="btn btn-sm btn-secondary" style={{width:"80px"}} onClick={() => del(data.detailId)}>삭제</button>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    ))}
+                                    <tfoot style={{backgroundColor:"#e0e0e0", textAlign:"center"}}>
+                                        <tr>
+                                            <td colSpan="6" style={{fontSize:"18px"}}>
+                                            상품금액 <span>{numberCommas(productPrice)}원</span> - 할인금액 <span>{numberCommas(disPrice)}</span> + 배송비 <span>{numberCommas(deliveryFee)}</span> = 결제금액 <span style={{ color:"red", fontWeight:"bold" }}>{numberCommas(totalPrice)}원</span>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                    </>
+                                )
+                                :
+                                (
+                                    <tfoot style={{ textAlign: "center", height: "500px" }}>
+                                        <tr>
+                                            <td colSpan="6" style={{ fontSize: "18px" }}>
+                                                상품이 없습니다.
+                                            </td>
+                                        </tr>
                                 </tfoot>
+                                )}
+                                
                             </table>
                     
                     </div>
