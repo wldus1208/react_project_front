@@ -1,6 +1,5 @@
 
 import Index from "views/Index.js";
-import Profile from "views/examples/Profile.js";
 import Maps from "views/examples/Maps.js";
 import Register from "views/examples/Register.js";
 import Login from "views/examples/Login.js";
@@ -11,6 +10,7 @@ import CateDetail from "views/pages/CateDetail.js";
 import Cart from "views/pages/Cart.js";
 import Order from "views/pages/Order.js";
 import Payment from "views/pages/Payment.js";
+import OrderList from "views/mypage/OrderList";
 
 var routes = [
   {
@@ -32,13 +32,6 @@ var routes = [
     name: "Maps",
     icon: "ni ni-pin-3 text-orange",
     component: <Maps />,
-    layout: "/admin",
-  },
-  {
-    path: "/user-profile",
-    name: "User Profile",
-    icon: "ni ni-single-02 text-yellow",
-    component: <Profile />,
     layout: "/admin",
   },
   {
@@ -96,6 +89,13 @@ var routes = [
     icon: "ni ni-planet text-blue",
     component: <Payment />,
     layout: "/admin",
+  },
+  {
+    path: "/orderlist",
+    name: "OrderList",
+    icon: "ni ni-planet text-blue",
+    component: <OrderList />,
+    layout: "/mypage",
   },
 ];
 export default routes;

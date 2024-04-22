@@ -96,9 +96,9 @@ const AdminNavbar = (props) => {
                   <i className="ni ni-bag-17" />
                   <span>쇼핑백</span>
                 </DropdownItem>
-                <DropdownItem to="/admin/user-profile" tag={Link}>
+                <DropdownItem to="/mypage/orderlist" tag={Link}>
                   <i className="ni ni-single-02" />
-                  <span>My profile</span>
+                  <span>MyPage</span>
                 </DropdownItem>
                 <DropdownItem to="/admin/user-profile" tag={Link}>
                   <i className="ni ni-settings-gear-65" />

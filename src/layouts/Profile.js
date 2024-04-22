@@ -1,21 +1,3 @@
-/*!
-
-=========================================================
-* Argon Dashboard React - v1.2.4
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/argon-dashboard-react
-* Copyright 2024 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://github.com/creativetimofficial/argon-dashboard-react/blob/master/LICENSE.md)
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
-
 // reactstrap components
 import {
   Button,
@@ -31,13 +13,45 @@ import {
 } from "reactstrap";
 // core components
 import UserHeader from "components/Headers/UserHeader.js";
+import AdminNavbar from "components/Navbars/AdminNavbar.js";
+import Sidebar from "components/Sidebar/Sidebar.js";
+import routes from "routes.js";
+import { useLocation, Route, Routes, Navigate } from "react-router-dom";
 
-const Profile = () => {
+const Profile = (props) => {
+  const getRoutes = (routes) => {
+    return routes.map((prop, key) => {
+      if (prop.layout === "/mypage") {
+        return (
+          <Route path={prop.path} element={prop.component} key={key} exact />
+        );
+      } else {
+        return null;
+      }
+    });
+  };
+
   return (
     <>
-      <UserHeader />
-      {/* Page content */}
-      <Container className="mt--7" fluid>
+      <Sidebar
+        {...props}
+        routes={routes}
+        logo={{
+          innerLink: "/admin/index",
+        }}
+      />
+      <div className="main-content" style={{backgroundColor:"white"}}>
+        <AdminNavbar
+            {...props}
+        />
+        <UserHeader />
+        <Routes>
+          {getRoutes(routes)}
+          <Route path="*" element={<Navigate to="/admin/index" replace />} />
+        </Routes>
+      </div>
+      
+      {/* <Container className="mt--7" fluid>
         <Row>
           <Col className="order-xl-2 mb-5 mb-xl-0" xl="4">
             <Card className="card-profile shadow">
@@ -223,7 +237,7 @@ const Profile = () => {
                     </Row>
                   </div>
                   <hr className="my-4" />
-                  {/* Address */}
+                  
                   <h6 className="heading-small text-muted mb-4">
                     Contact information
                   </h6>
@@ -301,7 +315,7 @@ const Profile = () => {
                     </Row>
                   </div>
                   <hr className="my-4" />
-                  {/* Description */}
+                  
                   <h6 className="heading-small text-muted mb-4">About me</h6>
                   <div className="pl-lg-4">
                     <FormGroup>
@@ -321,7 +335,7 @@ const Profile = () => {
             </Card>
           </Col>
         </Row>
-      </Container>
+      </Container> */}
     </>
   );
 };
