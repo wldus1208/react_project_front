@@ -20,7 +20,7 @@ const Sidebar = () => {
     >
       <Container fluid>
         <Collapse navbar>
-        <h2 className="navbar-heading mt-4" style={{fontSize:"30px"}}>MYPAGE</h2>
+        <h2 className="navbar-heading" style={{fontSize:"30px"}}>MYPAGE</h2>
         <h6 className="navbar-heading text-muted mt-2">쇼핑내역</h6>
           <Nav className="mb-md-1" navbar>
             <NavItem>
