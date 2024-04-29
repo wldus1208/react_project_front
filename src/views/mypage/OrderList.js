@@ -1,17 +1,20 @@
 import { ButtonToggle } from 'reactstrap';
 import React, { useState, useEffect  } from 'react';
+import axios from 'axios';
+import { numberCommas } from 'components/commonUtils';
 
 const OrderList = () => {
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
+    const today = new Date();
+    const oneMonthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate() + 1);
+    const [startDate, setStartDate] = useState(oneMonthAgo.toISOString().slice(0, 10));
+    const [endDate, setEndDate] = useState(today.toISOString().slice(0, 10));
+    const loginId = sessionStorage.getItem('loginId');
+    const [Data, setData] = useState([]);
+    const [listType, setListType] = useState('month');
+    const [cnt, setCnt] = useState(0);
 
-    useEffect(() => {
-        
-        const today = new Date();
-        const oneMonthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate() + 1);
-        setEndDate(today.toISOString().slice(0, 10));
-    
-        setStartDate(oneMonthAgo.toISOString().slice(0, 10));
+    useEffect(() => { 
+        orderlist();
     }, []);
 
     const [buttonStates, setButtonStates] = useState({
@@ -22,6 +25,8 @@ const OrderList = () => {
     });
 
     const buttonClick = (type) => {
+        setListType(type);
+        // console.log(listType);
         const today = new Date();
         if(type === 'month') {  
             const oneMonthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate() + 1);
@@ -42,6 +47,29 @@ const OrderList = () => {
             Object.entries(prevButtonStates).map(([key]) => [key, key === type])
           )
         }));
+    };
+
+    const orderlist = () => {
+        // console.log(listType);
+        let params = new URLSearchParams()
+        params.append('loginId', loginId)
+        params.append('type', listType)
+        params.append('startDate', startDate)
+        params.append('endDate', endDate)
+
+        axios.post("/order/orderlist/", params)
+          .then(res => {
+            console.log(res.data);
+            setData(res.data.orderlist);
+            setCnt(res.data.orderlist.length);
+          })
+          .catch(error => {
+              console.error('Error fetching store name:', error);
+          });
+    };
+
+    const read = () => {
+        orderlist();
     };
 
     return (
@@ -88,53 +116,68 @@ const OrderList = () => {
                             </ButtonToggle>
                             <input type='date' value={startDate} onChange={(e) => setStartDate(e.target.value)} className='ml-7'></input> ~ 
                             <input type='date' value={endDate} onChange={(e) => setEndDate(e.target.value)}></input>
-                            <button type="button" className="btn btn-dark btn-sm ml-2">조회</button>
+                            <button type="button" className="btn btn-dark btn-sm ml-2" onClick={read}>조회</button>
                         </div>
                     </div>
                     <div className="mt-4 border-top">
                         <table className="table" style={{tableLayout:"fixed", width:"100%"}}>
                             <colgroup>
                                 <col style={{ width: "15%" }} />
-                                <col style={{ width: "45%" }} />
+                                <col style={{ width: "15%" }} />
+                                <col style={{ width: "35%" }} />
                                 <col style={{ width: "15%" }} />
                                 <col style={{ width: "10%" }} />
                             </colgroup>
                             <thead>
                                 <tr style={{textAlign:"center"}}>
                                     <th>일자/주문번호</th>
-                                    <th>주문상품정보</th>
+                                    <th colSpan='2'>주문상품정보</th>
                                     <th>결제금액</th>
                                     <th>진행상태</th> 
                                     <th>비고</th> 
                                 </tr>
                             </thead>
-                            <tbody>
+                            {cnt === 0 ? (
+                            <tbody style={{ textAlign: "center", height: "500px" }}>
                                 <tr>
-                                    <td>
-                                        <img
-                                            alt="..."
-                                            src={require('../../assets/img/product/AABA4F901BK_00.jpg')}
-                                            style={{width: "90px", height: "100px"}}
-                                        />
+                                    <td colSpan="6" style={{ fontSize: "18px" }}>
+                                        상품이 없습니다.
                                     </td>
-                                    <td>
-                                        <p>ㅗ하롸리</p>
-                                        <p>호ㅓㅗ허ㅘㅓ</p>
-                                        <p>개</p>
-                                    </td>
-                                    <td style={{textAlign:"center"}}>
-                                        <p style={{ textDecoration: "line-through", color: "gray" }}></p>
-                                        <p style={{ fontWeight: "bold" }}>
-                                            
-                                        </p>
-                                        <p style={{ fontSize:"10px" }}>
-                                            
-                                        </p>
-                                    </td>
-                                    <td>fdghfgj</td>
-                                    <td rowSpan="2" style={{textAlign:"center"}}>무료</td>
                                 </tr>
                             </tbody>
+                            ):(
+                                <>
+                                    {Data.map((data, index) => (
+                                    <tbody key={index}>
+                                        <tr>
+                                            <td style={{textAlign:"center"}}>
+                                                <p>{data.paymentDt}</p>
+                                                <p>{data.orderId}</p>
+                                            </td>
+                                            <td style={{textAlign:"center"}}>
+                                                <img
+                                                    alt="..."
+                                                    src={require(`../../assets/img/product/${data.img}`)}
+                                                    style={{width: "90px", height: "100px"}}
+                                                />
+                                            </td>
+                                            <td>
+                                                <p>{data.brand}</p>
+                                                <p>{data.detailName}</p>
+                                            </td>
+                                            <td style={{textAlign:"center"}}>
+                                                <p>{numberCommas(data.totPayment)}원</p>
+                                            </td>
+                                            <td style={{textAlign:"center"}}>
+                                                <p>{data.status}</p>
+                                            </td>
+                                            <td style={{textAlign:"center"}}></td>
+                                        </tr>
+                                    </tbody>
+                                    ))}
+                                </>
+                            )}
+                            
                         </table>
                     </div>
                 </div>

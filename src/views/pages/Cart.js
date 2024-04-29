@@ -28,11 +28,14 @@ const Cart = () => {
     }, []);
 
     const list = () => {
-        axios.post("/cart/list/")
+        let params = new URLSearchParams()
+        params.append('loginId', loginId)
+
+        axios.post("/cart/list/", params)
           .then(res => {
             // console.log(res.data.cart);
             setData(res.data.cart)
-            console.log(res.data.cart.length);
+            // console.log(res.data.cart.length);
             setProductCnt(res.data.cart.length)
           })
           .catch(error => {
@@ -332,7 +335,7 @@ const Cart = () => {
                                                 상품이 없습니다.
                                             </td>
                                         </tr>
-                                </tfoot>
+                                    </tfoot>
                                 )}
                                 
                             </table>
