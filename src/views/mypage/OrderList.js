@@ -141,7 +141,7 @@ const OrderList = () => {
                             <tbody style={{ textAlign: "center", height: "500px" }}>
                                 <tr>
                                     <td colSpan="6" style={{ fontSize: "18px" }}>
-                                        상품이 없습니다.
+                                        주문/배송 내역이 없습니다.
                                     </td>
                                 </tr>
                             </tbody>

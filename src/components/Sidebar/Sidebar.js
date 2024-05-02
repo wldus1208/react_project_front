@@ -24,7 +24,7 @@ const Sidebar = () => {
         <h6 className="navbar-heading text-muted mt-2">쇼핑내역</h6>
           <Nav className="mb-md-1" navbar>
             <NavItem>
-              <NavLink className="nav-link-icon" to="" tag={Link}>
+              <NavLink className="nav-link-icon" to="/mypage/orderlist" tag={Link}>
                 <span className="nav-link-inner--text" style={{color:"black"}}>주문/배송내역</span>
               </NavLink>
             </NavItem>
@@ -62,7 +62,7 @@ const Sidebar = () => {
               </NavLink>
             </NavItem>
             <NavItem>
-              <NavLink className="nav-link-icon" to="" tag={Link}>
+              <NavLink className="nav-link-icon" to="/mypage/confirm" tag={Link}>
                 <span className="nav-link-inner--text" style={{color:"black"}}>회원정보 변경</span>
               </NavLink>
             </NavItem>

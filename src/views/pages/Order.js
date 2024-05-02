@@ -66,6 +66,7 @@ const Order = () => {
         // console.log(detailId);
 
         let params = new URLSearchParams()
+        params.append('loginId', loginId)
         params.append('detailId', detailId)
 
         axios.post("/order/list/", params)
@@ -205,6 +206,7 @@ const Order = () => {
             params.append('zip', postalCode)
             params.append('location', deliveryOption)
             params.append('totPayment', totalPrice)
+            params.append('rewords', rewardPoints)
 
             const amountString = Data.map(data => data.amount).join(',');
             // console.log(amountString);

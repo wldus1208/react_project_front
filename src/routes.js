@@ -11,6 +11,8 @@ import Cart from "views/pages/Cart.js";
 import Order from "views/pages/Order.js";
 import Payment from "views/pages/Payment.js";
 import OrderList from "views/mypage/OrderList";
+import Confirm from "views/mypage/Confirm";
+import Info from "views/mypage/Info";
 
 var routes = [
   {
@@ -95,6 +97,20 @@ var routes = [
     name: "OrderList",
     icon: "ni ni-planet text-blue",
     component: <OrderList />,
+    layout: "/mypage",
+  },
+  {
+    path: "/confirm",
+    name: "Confirm",
+    icon: "ni ni-planet text-blue",
+    component: <Confirm />,
+    layout: "/mypage",
+  },
+  {
+    path: "/info",
+    name: "Info",
+    icon: "ni ni-planet text-blue",
+    component: <Info />,
     layout: "/mypage",
   },
 ];
